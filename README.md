@@ -10,6 +10,7 @@ Soal No 2:
 
 - Terletak di src/soal2
 - node server-client.js
+- Jalankan program hingga tertulis "Connection closed" di console
 - Jika program selesai dijalankan, server.log akan ter-create
 
 Soal No 3:
