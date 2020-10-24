@@ -3,12 +3,34 @@ var fs = require('fs');
 var moment = require('moment');
 
 /* Server Side */
+
+var port = 1337;
+var server = net.createServer();
+server.listen(port);
+server.on('connection', function(socket) {
+    socket = new JsonSocket(socket);
+    var isRunning = false;
+    var streatTimeout;
+    socket.on('message', function(message) {
+        if (message.command == 'start') {
+            if (!isRunning) {
+                isRunning = true;
+                streamInterval = setInterval(function() {
+                    socket.sendMessage()
+                })
+            }
+        }
+    })
+})
+
+
 var port = 1337;
 var ipAddress = '127.0.0.1'
+var dataStream = fs.createWriteStream('server.log')
 var server = net.createServer(function(socket) {
 	socket.write('Echo server\r\n');
 	socket.pipe(socket).on('data', function(data) {
-		fs.appendFile('server.log', `[${moment().format()}] Success : POST http://${ipAddress}/ ${data} `, function(err, result) {
+		dataStream.write(`[${moment().format()}] Success : POST http://${ipAddress}/ ${data} `, function(err, result) {
 			if(err) console.log('error',err);
 		});
 	});
@@ -20,17 +42,37 @@ server.listen(port, ipAddress);
 
 /* Client Side */
 var net = require('net');
+var counter = 1;
+
+function xrandom(length) {
+	var result           = '';
+	var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	var charactersLength = characters.length;
+	for ( var i = 0; i < length; i++ ) {
+	   result += characters.charAt(Math.floor(Math.random() * charactersLength));
+	}
+	return result;
+ }
 
 var client = new net.Socket();
 client.connect(1337, '127.0.0.1', function() {
 	console.log('Connected');
-	client.write(`{"counter": 1, "X-RANDOM": "93f9h3dx"}`);
+	var myVar = setInterval(myTimer, 2000);
+	function myTimer() {
+		client.write(`{"counter": ${counter}, "X-RANDOM": "${xrandom(8)}"} \n`);
+		counter++;
+	}
+	setTimeout( function() {
+		clearInterval(myVar);
+	}, 2000 * 4)
 });
 
-client.on('data', function(data) {
-	console.log('Received: ' + data);
-	client.destroy();
-});
+setTimeout( function() {
+	client.on('data', function(data) {
+ 		console.log('Received: ' + data);
+	 	client.destroy();
+	});
+}, 2000 * 5);
 
 client.on('close', function() {
 	console.log('Connection closed');
