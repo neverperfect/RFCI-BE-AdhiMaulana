@@ -5,26 +5,6 @@ var moment = require('moment');
 /* Server Side */
 
 var port = 1337;
-var server = net.createServer();
-server.listen(port);
-server.on('connection', function(socket) {
-    socket = new JsonSocket(socket);
-    var isRunning = false;
-    var streatTimeout;
-    socket.on('message', function(message) {
-        if (message.command == 'start') {
-            if (!isRunning) {
-                isRunning = true;
-                streamInterval = setInterval(function() {
-                    socket.sendMessage()
-                })
-            }
-        }
-    })
-})
-
-
-var port = 1337;
 var ipAddress = '127.0.0.1'
 var dataStream = fs.createWriteStream('server.log')
 var server = net.createServer(function(socket) {
